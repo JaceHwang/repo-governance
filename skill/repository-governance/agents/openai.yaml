@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Governance"
+  short_description: "Standardize Git commits, branches, versions, and releases"
+  default_prompt: "Use $repository-governance to initialize or verify repository governance before committing or releasing."

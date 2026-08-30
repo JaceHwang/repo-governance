@@ -1,0 +1,31 @@
+#!/bin/sh
+set -eu
+
+platform=${1:-}
+tag=${2:-}
+[ "$platform" = source ] || { printf 'unsupported release platform: %s\n' "$platform" >&2; exit 64; }
+printf '%s\n' "$tag" | grep -Eq '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' || {
+  printf 'invalid stable release tag: %s\n' "$tag" >&2
+  exit 64
+}
+
+project_root=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
+version=${tag#v}
+recorded_version=$(awk 'NR == 1 { print $1; exit }' "$project_root/version.txt")
+[ "$recorded_version" = "$version" ] || {
+  printf 'version.txt does not match %s\n' "$tag" >&2
+  exit 1
+}
+output="$project_root/.dist/release"
+rm -rf "$output"
+mkdir -p "$output"
+archive="repo-governance-$tag.tar.gz"
+git -C "$project_root" archive --format=tar.gz --prefix="repo-governance-$version/" -o "$output/$archive" HEAD
+source_commit=$(git -C "$project_root" rev-parse HEAD)
+printf '{\n  "version": "%s",\n  "tag": "%s",\n  "sourceCommit": "%s"\n}\n' \
+  "$version" "$tag" "$source_commit" >"$output/PROVENANCE.json"
+if command -v sha256sum >/dev/null 2>&1; then
+  (cd "$output" && sha256sum "$archive" PROVENANCE.json >SHA256SUMS.txt)
+else
+  (cd "$output" && shasum -a 256 "$archive" PROVENANCE.json >SHA256SUMS.txt)
+fi
