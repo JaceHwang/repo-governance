@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+
+platform=${1:-}
+tag=${2:-}
+[ "$platform" = source ] || { printf 'unsupported release platform: %s\n' "$platform" >&2; exit 64; }
+project_root=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
+output="$project_root/.dist/release"
+version=${tag#v}
+archive="repo-governance-$tag.tar.gz"
+
+test -f "$output/$archive"
+test -f "$output/PROVENANCE.json"
+test -f "$output/SHA256SUMS.txt"
+(cd "$output" && shasum -a 256 -c SHA256SUMS.txt)
+python3 - "$output/PROVENANCE.json" "$version" "$(git -C "$project_root" rev-parse HEAD)" <<'PY'
+import json
+import sys
+
+path, version, commit = sys.argv[1:]
+with open(path, encoding="utf-8") as handle:
+    data = json.load(handle)
+if data != {"version": version, "tag": f"v{version}", "sourceCommit": commit}:
+    raise SystemExit("release provenance does not match the checked-out source")
+PY
+tar -tzf "$output/$archive" | grep -Fq "repo-governance-$version/governance"
+
