@@ -60,6 +60,7 @@ install_agents_rules() {
 
 for relative in \
   governance \
+  .governance/VERSION \
   .governance/policy.defaults.sh \
   .githooks/pre-commit \
   .githooks/commit-msg \
@@ -67,10 +68,7 @@ for relative in \
   .github/workflows/governance.yml \
   .github/workflows/release-please.yml \
   .github/workflows/publish-platform.yml \
-  .github/workflows/prerelease.yml \
-  .governance/release/alpha.json \
-  .governance/release/beta.json \
-  .governance/release/rc.json
+  .github/workflows/prerelease.yml
 do
   install_file "$relative"
 done
@@ -83,6 +81,9 @@ for relative in \
   .governance/adapters/check-full \
   .governance/adapters/build-release \
   .governance/adapters/verify-release \
+  .governance/release/alpha.json \
+  .governance/release/beta.json \
+  .governance/release/rc.json \
   release-please-config.json \
   .release-please-manifest.json \
   version.txt
@@ -92,5 +93,5 @@ done
 
 chmod +x "$target/governance" "$target"/.githooks/* "$target"/.governance/adapters/*
 install_agents_rules
-printf 'governance=%s template=%s target=%s\n' "$mode" 0.1.0 "$target"
+printf 'governance=%s template=%s target=%s\n' "$mode" "$(cat "$source_root/.governance/VERSION")" "$target"
 printf 'next=./governance bootstrap && ./governance doctor\n'

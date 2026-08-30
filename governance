@@ -235,6 +235,8 @@ update_release_status() {
 
 doctor() {
   status=0
+  template_version=$(cat "$repo_root/.governance/VERSION" 2>/dev/null || printf unknown)
+  printf 'template-version=%s\n' "$template_version"
   configured_hooks=$(git -C "$repo_root" config --local --get core.hooksPath || true)
   if [ "$configured_hooks" = .githooks ]; then
     printf 'hooks=active\n'

@@ -14,6 +14,7 @@ printf '# Existing instructions\n\nKeep this repository rule.\n' >"$target/AGENT
 
 for path in \
   governance \
+  .governance/VERSION \
   .governance/policy.sh \
   .governance/adapters/format-staged \
   .governance/adapters/check-fast \
@@ -51,11 +52,20 @@ grep -Fq 'Keep this repository rule.' "$target/AGENTS.md" || {
   printf 'FAIL: installed governance cannot bootstrap hooks\n' >&2
   exit 1
 }
+[ "$(cat "$target/.governance/VERSION")" = '0.1.0' ] || {
+  printf 'FAIL: installer did not record the template version\n' >&2
+  exit 1
+}
 
 printf 'custom project verification\n' >"$target/.governance/adapters/check-full"
+printf '{"project": "release-policy"}\n' >"$target/.governance/release/alpha.json"
 "$project_root/scripts/install.sh" --target "$target" --update
 [ "$(cat "$target/.governance/adapters/check-full")" = 'custom project verification' ] || {
   printf 'FAIL: update overwrote a project adapter\n' >&2
+  exit 1
+}
+[ "$(cat "$target/.governance/release/alpha.json")" = '{"project": "release-policy"}' ] || {
+  printf 'FAIL: update overwrote a repository release configuration\n' >&2
   exit 1
 }
 [ "$(grep -Fc '<!-- repo-governance:start -->' "$target/AGENTS.md")" = 1 ] || {

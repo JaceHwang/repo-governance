@@ -6,12 +6,12 @@
   "bump-minor-pre-major": true,
   "versioning": "prerelease",
   "prerelease": true,
-  "prerelease-type": "beta",
   "draft": true,
   "force-tag-creation": true,
   "packages": {
     ".": {
-      "component": "project"
+      "component": "project",
+      "prerelease-type": "beta"
     }
   }
 }

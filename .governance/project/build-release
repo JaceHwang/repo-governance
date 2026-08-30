@@ -11,7 +11,8 @@ printf '%s\n' "$tag" | grep -Eq '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-
 
 project_root=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
 version=${tag#v}
-[ "$(cat "$project_root/version.txt")" = "$version" ] || {
+recorded_version=$(awk 'NR == 1 { print $1; exit }' "$project_root/version.txt")
+[ "$recorded_version" = "$version" ] || {
   printf 'version.txt does not match %s\n' "$tag" >&2
   exit 1
 }
@@ -28,4 +29,3 @@ if command -v sha256sum >/dev/null 2>&1; then
 else
   (cd "$output" && shasum -a 256 "$archive" PROVENANCE.json >SHA256SUMS.txt)
 fi
-

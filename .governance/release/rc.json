@@ -6,12 +6,12 @@
   "bump-minor-pre-major": true,
   "versioning": "prerelease",
   "prerelease": true,
-  "prerelease-type": "rc",
   "draft": true,
   "force-tag-creation": true,
   "packages": {
     ".": {
-      "component": "project"
+      "component": "project",
+      "prerelease-type": "rc"
     }
   }
 }

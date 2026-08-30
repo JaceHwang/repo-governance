@@ -8,8 +8,13 @@
   "force-tag-creation": true,
   "packages": {
     ".": {
-      "component": "project"
+      "component": "project",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "version.txt"
+        }
+      ]
     }
   }
 }
-
