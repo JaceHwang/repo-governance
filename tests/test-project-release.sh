@@ -13,17 +13,24 @@ git -C "$fixture" add .
 git -C "$fixture" commit -q -m 'test: create release fixture'
 cd "$fixture"
 
-.governance/project/build-release source v0.0.0
-.governance/project/verify-release source v0.0.0
+version=$(awk 'NR == 1 { print $1; exit }' version.txt)
+printf '%s\n' "$version" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' || {
+  printf 'fixture version is not stable SemVer: %s\n' "$version" >&2
+  exit 1
+}
+tag="v$version"
 
-test -f .dist/release/repo-governance-v0.0.0.tar.gz
+.governance/project/build-release source "$tag"
+.governance/project/verify-release source "$tag"
+
+test -f ".dist/release/repo-governance-$tag.tar.gz"
 test -f .dist/release/SHA256SUMS.txt
 test -f .dist/release/PROVENANCE.json
 python3 -c '
 import json
 from pathlib import Path
 data = json.loads(Path(".dist/release/PROVENANCE.json").read_text())
-assert data["version"] == "0.0.0"
+assert data["version"] == Path("version.txt").read_text().split()[0]
 assert len(data["sourceCommit"]) == 40
 '
 
